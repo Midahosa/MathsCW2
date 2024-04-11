@@ -1,0 +1,71 @@
+clear all;
+%Modelling methods and tools coursework 
+%Code utilises the simpson method in order to take data and output a result
+tic
+% Step 1: import data %
+%60ms data
+%data=tdfread('dataset2.txt');
+%10 ms data
+data=tdfread('dataset3.txt');
+% tdfread can read data from tab-delimited text files with
+% .txt, .dat, or .csv file extensions.
+% Select a file that has variable names in the first row and
+% values separated by tabs in the remaining rows. tdfread 
+% creates a variable in the workspace for each column of the 
+% file, and names each variable according to its first row 
+% value.
+
+% Step 2: create equally spaced data points for x-axis (time)%
+
+N = 11 ; %number of data points 
+% N needs to be odd so that an even number of equally spaced
+% strips are created when Simpson's rule is applied
+data.timei = linspace(min(data.time),max(data.time),N) ; 
+% x = linspace(x1,x2,n) generates n points. 
+% The spacing between the points is (x2-x1)/(n-1)
+
+% Step 3: create equally spaced data points for y-axis. This %
+% is achieved by interpolating for specific x- values (time).%
+
+data.Presi = interp1(data.time,data.Pres,data.timei) ; 
+% returns interpolated values at specific query points using 
+% linear interpolation
+data.Pcapi = interp1(data.time,data.Pcap,data.timei) ; 
+% returns interpolated values at specific query points using 
+% linear interpolation
+
+% Step 4: Integrate with Simpson's rule %
+% from a to b using n intervals (n+1 points) %
+
+a = min(data.time); %first time point
+b = max(data.time); %last time point
+% intervals need to be an even number, 
+% so N must be an odd number
+n = N - 1; % intervals
+dx = (b-a)/n; % width of each strip
+
+% Capacitor 
+
+%first = data.Pcapi(1); %returns n=0 data point
+%last = data.Pcapi(end); %returns last data point
+% returns all excluding the first and last term
+%data.PcapiNoFirstLastterms = data.Pcapi(2:end-1); 
+% returns odd terms from n=1 to n-1
+%data.PcapiOddterms = data.PcapiNoFirstLastterms(1:2:end); 
+% returns even terms from n=2 to n-2
+%data.PcapiEventerms = data.PcapiNoFirstLastterms(2:2:end); 
+% Resistor 
+
+first = data.Presi(1); %returns n=0 data point
+last = data.Presi(end); %returns last data point
+% returns all excluding the first and last term
+data.PresiNoFirstLastterms = data.Presi(2:end-1); 
+% returns odd terms from n=1 to n-1
+data.PresiOddterms = data.PresiNoFirstLastterms(1:2:end); 
+% returns even terms from n=2 to n-2
+data.PresiEventerms = data.PresiNoFirstLastterms(2:2:end); 
+
+%Application of Simpson's rule
+%E_capi_Simp = (dx/3) *(first + last + 4*sum(data.PcapiOddterms,"all")+ 2*sum(data.PcapiEventerms,"all"));
+E_resi_Simp = (dx/3) *(first + last + 4*sum(data.PresiOddterms,"all")+ 2*sum(data.PresiEventerms,"all"));
+toc
